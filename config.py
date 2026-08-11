@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 # 加载 .env 文件
 load_dotenv()
 
-# HuggingFace 镜像（国内加速下载模型，必须在 import HuggingFace 之前设置）
+# HuggingFace 镜像（本地开发时用，部署时不需要）
 _hf_endpoint = os.getenv("HF_ENDPOINT")
 if _hf_endpoint:
     os.environ["HF_ENDPOINT"] = _hf_endpoint
@@ -20,7 +20,7 @@ DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
 DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 
-# Embedding 模型（HuggingFace 本地运行）
+# HuggingFace Embedding 模型
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 
 # 文件目录

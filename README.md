@@ -4,7 +4,7 @@
 
 ## 在线体验
 
-> 部署后更新此处链接
+> 🔗 [https://starter-rag-app-production.up.railway.app](https://starter-rag-app-production.up.railway.app)
 
 ## 功能
 
