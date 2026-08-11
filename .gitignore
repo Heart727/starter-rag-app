@@ -1,0 +1,21 @@
+# 虚拟环境
+.venv/
+
+# 环境变量（含 API Key）
+.env
+
+# 向量数据库
+chroma_db/
+
+# 上传的文件
+data/uploads/*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 系统
+.DS_Store
+Thumbs.db
+desktop.ini

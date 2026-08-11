@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库问答</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 知识库问答</h1>
+            <p class="subtitle">上传文档 → 提问 → AI 基于文档回答</p>
+        </header>
+
+        <!-- 上传区域 -->
+        <section class="card" id="uploadSection">
+            <h2>📤 上传文档</h2>
+            <p class="hint">支持 PDF、TXT、MD 格式，可一次选多个</p>
+            <div class="upload-area" id="dropZone">
+                <input type="file" id="fileInput" multiple accept=".pdf,.txt,.md" hidden>
+                <button id="selectBtn" class="btn btn-outline">选择文件</button>
+                <span id="fileList" class="file-list">未选择文件</span>
+            </div>
+            <div class="btn-row">
+                <button id="uploadBtn" class="btn btn-primary" disabled>上传文件</button>
+                <button id="processBtn" class="btn btn-primary" disabled>开始处理</button>
+            </div>
+            <div id="statusBar" class="status-bar hidden">
+                <span id="statusIcon"></span>
+                <span id="statusText"></span>
+            </div>
+        </section>
+
+        <!-- 问答区域 -->
+        <section class="card" id="chatSection">
+            <h2>💬 提问</h2>
+            <div id="chatBox" class="chat-box">
+                <div class="chat-empty">上传并处理文档后，在这里提问</div>
+            </div>
+            <div class="input-row">
+                <input type="text" id="questionInput" placeholder="输入你的问题，例如：这份文档讲了什么？" disabled>
+                <button id="askBtn" class="btn btn-primary" disabled>提问</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
