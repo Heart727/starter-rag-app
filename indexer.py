@@ -20,6 +20,9 @@ import chromadb
 
 from config import UPLOAD_DIR, CHROMA_DIR
 
+# 示例文档目录（随代码打包，部署后始终可用）
+SAMPLE_DIR = os.path.join(os.path.dirname(__file__), "sample_docs")
+
 # ----- 全局状态 -----
 processing_status = {
     "status": "idle",
@@ -58,14 +61,25 @@ def process_documents():
     global processing_status
     processing_status = {"status": "processing", "message": "正在读取文档...", "doc_count": 0}
 
-    files = os.listdir(UPLOAD_DIR)
-    if not files:
+    # 合并示例文档和用户上传文档
+    all_files = []
+    if os.path.isdir(SAMPLE_DIR):
+        all_files.extend(os.listdir(SAMPLE_DIR))
+    if os.path.isdir(UPLOAD_DIR):
+        all_files.extend(os.listdir(UPLOAD_DIR))
+
+    if not all_files:
         processing_status = {"status": "idle", "message": "没有待处理的文档", "doc_count": 0}
         return 0
 
     try:
         processing_status["message"] = "正在读取文档..."
-        documents = SimpleDirectoryReader(UPLOAD_DIR).load_data()
+        # 分别加载两个目录的文档
+        documents = []
+        if os.path.isdir(SAMPLE_DIR) and os.listdir(SAMPLE_DIR):
+            documents.extend(SimpleDirectoryReader(SAMPLE_DIR).load_data())
+        if os.path.isdir(UPLOAD_DIR) and os.listdir(UPLOAD_DIR):
+            documents.extend(SimpleDirectoryReader(UPLOAD_DIR).load_data())
         processing_status["doc_count"] = len(documents)
 
         if not documents:
