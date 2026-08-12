@@ -75,7 +75,18 @@ def get_status():
     }
 
 
-# ===== API 4：问答 =====
+# ===== API 4：调试：查看有哪些文件 =====
+@app.get("/api/files")
+def list_files():
+    """查看 sample_docs 和 uploads 目录各有什么文件"""
+    import os as _os
+    sample_dir = _os.path.join(_os.path.dirname(__file__), "sample_docs")
+    return {
+        "sample_docs": _os.listdir(sample_dir) if _os.path.isdir(sample_dir) else [],
+        "uploads": _os.listdir(UPLOAD_DIR) if _os.path.isdir(UPLOAD_DIR) else [],
+    }
+
+# ===== API 5：问答 =====
 @app.get("/api/query")
 def ask(question: str):
     """
