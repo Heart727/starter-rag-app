@@ -61,25 +61,21 @@ def process_documents():
     global processing_status
     processing_status = {"status": "processing", "message": "正在读取文档...", "doc_count": 0}
 
-    # 合并示例文档和用户上传文档
-    all_files = []
-    if os.path.isdir(SAMPLE_DIR):
-        all_files.extend(os.listdir(SAMPLE_DIR))
-    if os.path.isdir(UPLOAD_DIR):
-        all_files.extend(os.listdir(UPLOAD_DIR))
-
-    if not all_files:
-        processing_status = {"status": "idle", "message": "没有待处理的文档", "doc_count": 0}
-        return 0
+    # 优先用户上传的文档，没有上传时才用示例文档
+    upload_files = os.listdir(UPLOAD_DIR) if os.path.isdir(UPLOAD_DIR) else []
+    sample_files = os.listdir(SAMPLE_DIR) if os.path.isdir(SAMPLE_DIR) else []
 
     try:
         processing_status["message"] = "正在读取文档..."
-        # 分别加载两个目录的文档
         documents = []
-        if os.path.isdir(SAMPLE_DIR) and os.listdir(SAMPLE_DIR):
-            documents.extend(SimpleDirectoryReader(SAMPLE_DIR).load_data())
-        if os.path.isdir(UPLOAD_DIR) and os.listdir(UPLOAD_DIR):
+
+        if upload_files:
             documents.extend(SimpleDirectoryReader(UPLOAD_DIR).load_data())
+        elif sample_files:
+            documents.extend(SimpleDirectoryReader(SAMPLE_DIR).load_data())
+        else:
+            processing_status = {"status": "idle", "message": "没有待处理的文档", "doc_count": 0}
+            return 0
         processing_status["doc_count"] = len(documents)
 
         if not documents:
