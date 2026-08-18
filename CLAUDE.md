@@ -20,7 +20,7 @@
 - RAG 框架：LlamaIndex（API 设计对 RAG 最友好，上手快；LangChain 更灵活但概念多）
 - 向量库：Chroma（本地文件即可，部署时也存文件）
 - Embedding：HuggingFace sentence-transformers（`all-MiniLM-L6-v2`，80MB 小模型，离线运行，部署不需要额外 API）
-- 回答模型：DeepSeek API（`deepseek-chat`，API 格式兼容 OpenAI，LlamaIndex 原生支持）
+- 回答模型：DeepSeek API（`deepseek-v4-pro`，API 格式兼容 OpenAI，LlamaIndex 原生支持；⚠️ 不要用 deepseek-chat，旧别名会被静默映射到弱模型）
 - API Key：通过环境变量 `DEEPSEEK_API_KEY` 传入，部署时配在 Render/Railway 环境变量里
 - 前端：简单网页即可，不追求花哨
 

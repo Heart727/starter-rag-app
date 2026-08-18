@@ -18,7 +18,12 @@ if _hf_endpoint:
 # DeepSeek API 配置
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
-DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-v4-pro")
+# 兼容旧配置：deepseek-chat 是已过时的别名。DeepSeek 对旧别名不会报错，
+# 而是静默映射到弱模型 deepseek-v4-flash，导致线上悄悄降级。
+# 这里主动纠正，无论 .env / 部署平台环境变量写的是哪个旧值，最终都用 v4-pro。
+if DEEPSEEK_MODEL == "deepseek-chat":
+    DEEPSEEK_MODEL = "deepseek-v4-pro"
 
 # HuggingFace Embedding 模型
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
