@@ -4,6 +4,7 @@ FastAPI 主入口：提供文件上传、处理状态、问答三个 API，
 """
 
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,7 +13,27 @@ from config import UPLOAD_DIR
 from indexer import process_documents, processing_status, get_index
 from query import query_documents
 
-app = FastAPI(title="知识库问答 RAG 应用")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    启动钩子：Railway 免费版没有持久化存储，每次重新部署 chroma_db 都会被清空。
+    所以启动时检测：如果还没有索引，就自动重建（优先用户上传，无上传时用内置示例文档），
+    让 demo 部署完就能直接提问，不需要人手动点"处理文档"。
+    """
+    try:
+        if get_index() is None:
+            count = process_documents()
+            print(f"[startup] 检测到没有索引，自动重建完成，共 {count} 份文档")
+        else:
+            print("[startup] 已有索引，跳过自动重建")
+    except Exception as e:
+        # 失败不阻止启动：用户仍可在页面上手动点"处理文档"
+        print(f"[startup] 自动重建索引失败: {e}")
+    yield
+
+
+app = FastAPI(title="知识库问答 RAG 应用", lifespan=lifespan)
 
 # 静态文件目录（前端页面）
 os.makedirs("static", exist_ok=True)
