@@ -4,10 +4,13 @@ FastAPI 主入口：提供文件上传、处理状态、问答三个 API，
 """
 
 import os
+import re
+import uuid
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 from config import UPLOAD_DIR
 from indexer import process_documents, processing_status, get_index
@@ -41,6 +44,26 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 允许的文件类型
 ALLOWED_EXTENSIONS = {".pdf", ".txt", ".md"}
+MAX_UPLOAD_FILES = 5
+MAX_FILE_BYTES = 10 * 1024 * 1024
+MAX_TOTAL_UPLOAD_BYTES = 20 * 1024 * 1024
+
+
+def safe_upload_filename(filename: str | None) -> str:
+    """Return a short, cross-platform filename without path or reserved-name hazards."""
+    basename = (filename or "").replace("\\", "/").split("/")[-1]
+    cleaned = re.sub(r'[\x00-\x1f<>:"/\\|?*]', "_", basename).strip(" .")[:180]
+    if not cleaned:
+        return "document"
+    reserved = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}
+    if cleaned.split(".", 1)[0].upper() in reserved:
+        cleaned = "_" + cleaned
+    return cleaned
+
+
+class QueryRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+    history: list[dict[str, str]] = Field(default_factory=list, max_length=20)
 
 
 @app.get("/")
@@ -56,22 +79,41 @@ async def upload_files(files: list[UploadFile] = File(...)):
     上传一个或多个文档。
     支持 PDF、TXT、MD 格式。
     """
-    saved_files = []
+    if not files:
+        raise HTTPException(status_code=400, detail="请至少选择一个文件")
+    if len(files) > MAX_UPLOAD_FILES:
+        raise HTTPException(status_code=413, detail=f"一次最多上传 {MAX_UPLOAD_FILES} 个文件")
+
+    prepared_files = []
+    total_bytes = 0
     for file in files:
+        filename = safe_upload_filename(file.filename)
         # 校验文件类型
-        ext = os.path.splitext(file.filename or "")[1].lower()
+        ext = os.path.splitext(filename)[1].lower()
         if ext not in ALLOWED_EXTENSIONS:
             raise HTTPException(
                 status_code=400,
                 detail=f"不支持的文件类型: {ext}，仅支持 {', '.join(ALLOWED_EXTENSIONS)}",
             )
 
-        # 保存文件
-        file_path = os.path.join(UPLOAD_DIR, file.filename)
-        content = await file.read()
+        content = await file.read(MAX_FILE_BYTES + 1)
+        if not content:
+            raise HTTPException(status_code=400, detail=f"文件内容为空：{filename}")
+        if len(content) > MAX_FILE_BYTES:
+            raise HTTPException(status_code=413, detail=f"单个文件不能超过 {MAX_FILE_BYTES // (1024 * 1024)} MB：{filename}")
+        total_bytes += len(content)
+        if total_bytes > MAX_TOTAL_UPLOAD_BYTES:
+            raise HTTPException(status_code=413, detail="本次上传总大小不能超过 20 MB")
+        prepared_files.append((filename, content))
+
+    saved_files = []
+    for filename, content in prepared_files:
+        # 随机前缀避免同名文件覆盖；原名仍保留在文件路径中供检索溯源。
+        stored_name = f"{uuid.uuid4().hex[:8]}_{filename}"
+        file_path = os.path.join(UPLOAD_DIR, stored_name)
         with open(file_path, "wb") as f:
             f.write(content)
-        saved_files.append(file.filename)
+        saved_files.append(filename)
 
     return {"message": f"成功上传 {len(saved_files)} 个文件", "files": saved_files}
 
@@ -117,6 +159,15 @@ def ask(question: str):
     if not question.strip():
         raise HTTPException(status_code=400, detail="问题不能为空")
     result = query_documents(question.strip())
+    return result
+
+
+@app.post("/api/query")
+def ask_with_history(body: QueryRequest):
+    """向知识库提问，并带上当前浏览器会话中最近的对话上下文。"""
+    if not body.question.strip():
+        raise HTTPException(status_code=400, detail="问题不能为空")
+    result = query_documents(body.question.strip(), body.history)
     return result
 
 

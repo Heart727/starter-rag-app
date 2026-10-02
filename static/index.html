@@ -3,48 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>知识库问答</title>
+    <meta name="theme-color" content="#f4f6f2">
+    <title>拾知 · 知识库问答</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📚 知识库问答</h1>
-            <p class="subtitle">上传文档 → 提问 → AI 基于文档回答</p>
+    <main class="shell">
+        <header class="topbar">
+            <a class="brand" href="/" aria-label="拾知首页">
+                <span class="brand-mark" aria-hidden="true">知</span>
+                <span><strong>拾知</strong><small>KNOWLEDGE DESK</small></span>
+            </a>
+            <div class="connection"><span class="connection-dot"></span><span id="knowledgeStatus">正在检查知识库…</span></div>
         </header>
 
-        <!-- 上传区域 -->
-        <section class="card" id="uploadSection">
-            <h2>📤 上传文档</h2>
-            <p class="hint">支持 PDF、TXT、MD 格式，可一次选多个</p>
-            <div class="upload-area" id="dropZone">
-                <input type="file" id="fileInput" multiple accept=".pdf,.txt,.md" hidden>
-                <button id="selectBtn" class="btn btn-outline">选择文件</button>
-                <span id="fileList" class="file-list">未选择文件</span>
-            </div>
-            <div class="btn-row">
-                <button id="uploadBtn" class="btn btn-primary" disabled>上传文件</button>
-                <button id="processBtn" class="btn btn-primary" disabled>开始处理</button>
-            </div>
-            <div id="statusBar" class="status-bar hidden">
-                <span id="statusIcon"></span>
-                <span id="statusText"></span>
-            </div>
+        <section class="intro">
+            <p class="eyebrow">YOUR DOCUMENTS, WITH ANSWERS</p>
+            <h1>让资料，变得更好找。</h1>
+            <p>上传你的文档，直接提问。回答会附上相关片段，方便回到原文核对。</p>
         </section>
 
-        <!-- 问答区域 -->
-        <section class="card" id="chatSection">
-            <h2>💬 提问</h2>
-            <div id="chatBox" class="chat-box">
-                <div class="chat-empty">上传并处理文档后，在这里提问</div>
-            </div>
-            <div class="input-row">
-                <input type="text" id="questionInput" placeholder="输入你的问题，例如：这份文档讲了什么？" disabled>
-                <button id="askBtn" class="btn btn-primary" disabled>提问</button>
-            </div>
-        </section>
-    </div>
+        <div class="workspace">
+            <aside class="card library-card" aria-labelledby="uploadTitle">
+                <div class="section-heading">
+                    <span class="step">01</span>
+                    <div><h2 id="uploadTitle">知识资料</h2><p>添加 PDF、TXT 或 Markdown</p></div>
+                </div>
+                <div class="upload-area" id="dropZone">
+                    <span class="upload-icon" aria-hidden="true">↑</span>
+                    <input type="file" id="fileInput" multiple accept=".pdf,.txt,.md" hidden>
+                    <button id="selectBtn" class="btn btn-outline" type="button">选择文件</button>
+                    <span id="fileList" class="file-list">最多 5 个文件 · 单个不超过 10 MB</span>
+                </div>
+                <div class="btn-row">
+                    <button id="uploadBtn" class="btn btn-primary" type="button" disabled>上传资料</button>
+                    <button id="processBtn" class="btn btn-secondary" type="button" disabled>建立索引</button>
+                </div>
+                <div id="statusBar" class="status-bar hidden" role="status" aria-live="polite">
+                    <span id="statusIcon" aria-hidden="true"></span><span id="statusText"></span>
+                </div>
+                <div class="privacy-note">
+                    <span aria-hidden="true">◈</span>
+                    <p>共享演示知识库：上传资料会进入访客共用的知识库。请勿上传个人信息或敏感文件。</p>
+                </div>
+                <div class="limit-note">本次最多 20 MB。支持 PDF、TXT、MD 文件。</div>
+            </aside>
 
+            <section class="card chat-card" aria-labelledby="chatTitle">
+                <div class="section-heading chat-heading">
+                    <span class="step">02</span>
+                    <div><h2 id="chatTitle">和资料对话</h2><p>可以接着上一轮继续追问</p></div>
+                    <span class="ai-badge">AI 助手</span>
+                </div>
+                <div id="chatBox" class="chat-box" aria-live="polite" aria-label="对话内容">
+                    <div class="chat-empty">
+                        <span class="empty-mark" aria-hidden="true">问</span>
+                        <strong>你想从资料里了解什么？</strong>
+                        <p>知识库准备好后，可以直接提问或连续追问。</p>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <input type="text" id="questionInput" placeholder="例如：这份资料的核心结论是什么？" maxlength="2000" disabled aria-label="输入问题">
+                    <button id="askBtn" class="btn btn-ask" type="button" disabled>发送 <span aria-hidden="true">↗</span></button>
+                </div>
+                <p class="chat-footnote">回答由 AI 生成，请结合来源片段核对。</p>
+            </section>
+        </div>
+        <footer>拾知 · 把文档里的答案，交还给你。</footer>
+    </main>
     <script src="/static/app.js"></script>
 </body>
 </html>
